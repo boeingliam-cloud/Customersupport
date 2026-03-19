@@ -1,0 +1,2160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SupportHQ — All-in-One Customer Support Command Centre</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #12151c;
+    --surface2: #1a1f2a;
+    --border: #252b38;
+    --accent: #00e5a0;
+    --accent2: #ff6b35;
+    --accent3: #7c6fff;
+    --text: #e8ecf4;
+    --muted: #6b7592;
+    --danger: #ff4d6d;
+    --warn: #ffd166;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-dot {
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .header-tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .htab {
+    padding: 6px 16px;
+    background: none;
+    border: 1px solid transparent;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .htab:hover { color: var(--text); border-color: var(--border); }
+  .htab.active { color: var(--accent); border-color: var(--accent); background: rgba(0,229,160,0.06); }
+
+  /* MAIN LAYOUT */
+  .app {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    height: calc(100vh - 64px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .sidebar-section {
+    padding: 20px 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--muted);
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+  .sidebar-item:hover { background: var(--surface2); color: var(--text); }
+  .sidebar-item.active { background: rgba(0,229,160,0.1); color: var(--accent); }
+  .sidebar-icon { font-size: 16px; width: 20px; text-align: center; }
+  .badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+  .badge.orange { background: var(--accent2); }
+
+  /* MAIN CONTENT */
+  .main {
+    overflow-y: auto;
+    background: var(--bg);
+  }
+
+  /* PANELS */
+  .panel { display: none; padding: 32px; }
+  .panel.active { display: block; }
+
+  /* AI ASSISTANT PANEL */
+  .ai-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .ai-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.1;
+  }
+  .ai-sub { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,229,160,0.1);
+    border: 1px solid rgba(0,229,160,0.3);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--accent);
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  /* PROBLEM INPUT */
+  .problem-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .problem-box label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 12px;
+  }
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  select, .type-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    width: 100%;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  select:focus { border-color: var(--accent); }
+  textarea.problem-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 14px;
+    border-radius: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+  textarea.problem-input:focus { border-color: var(--accent); }
+  textarea.problem-input::placeholder { color: var(--muted); }
+
+  .btn-solve {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 13px 32px;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn-solve:hover { background: #00ffb3; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,229,160,0.3); }
+  .btn-solve:active { transform: translateY(0); }
+
+  /* RESPONSE AREA */
+  #responseArea { display: none; }
+  .response-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .response-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .response-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .response-card.green::before { background: var(--accent); }
+  .response-card.orange::before { background: var(--accent2); }
+  .response-card.purple::before { background: var(--accent3); }
+  .response-card.red::before { background: var(--danger); }
+  .card-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-label.green { color: var(--accent); }
+  .card-label.orange { color: var(--accent2); }
+  .card-label.purple { color: var(--accent3); }
+  .card-label.red { color: var(--danger); }
+  .card-content {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+  .card-content.script {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: #c9d3f0;
+  }
+  .full-width { grid-column: 1 / -1; }
+
+  .step-list { list-style: none; counter-reset: steps; }
+  .step-list li {
+    counter-increment: steps;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    background: var(--accent);
+    color: #000;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    float: right;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .loading-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px;
+    text-align: center;
+    display: none;
+  }
+  .loading-bar.show { display: block; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    color: var(--muted);
+    font-size: 13px;
+    animation: loadingDots 1.4s infinite;
+  }
+  @keyframes loadingDots {
+    0%,100%{opacity:1} 50%{opacity:0.4}
+  }
+
+  /* SCRIPTS PANEL */
+  .scripts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .script-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .script-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(0,229,160,0.06), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .script-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .script-card:hover::after { opacity: 1; }
+  .script-emoji { font-size: 28px; margin-bottom: 12px; }
+  .script-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .script-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  .script-viewer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    display: none;
+  }
+  .script-viewer.show { display: block; }
+  .script-viewer h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .script-viewer .sub { color: var(--muted); font-size: 12px; margin-bottom: 20px; }
+  .script-block {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 16px;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #c9d3f0;
+    position: relative;
+  }
+  .script-block.agent { border-left-color: var(--accent); }
+  .script-block.customer { border-left-color: var(--muted); }
+  .script-block .who {
+    font-family: 'DM Mono', monospace;
+    font-style: normal;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+  .script-block.customer .who { color: var(--muted); }
+
+  /* GUIDES PANEL */
+  .guides-hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+  .guides-hero-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .guides-hero-sub { color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .guides-visual {
+    width: 120px; height: 120px;
+    background: linear-gradient(135deg, rgba(0,229,160,0.15), rgba(124,111,255,0.15));
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    border: 1px solid var(--border);
+  }
+
+  .guide-category { margin-bottom: 28px; }
+  .guide-cat-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+  .guide-items {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .guide-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .guide-item:hover { border-color: var(--accent3); background: rgba(124,111,255,0.06); }
+  .guide-icon {
+    width: 40px; height: 40px;
+    background: var(--surface2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .guide-info h4 { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .guide-info p { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  .guide-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  .guide-modal.show { display: flex; }
+  .guide-modal-inner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    max-width: 680px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+  .modal-sub { color: var(--muted); font-size: 12px; margin-bottom: 24px; }
+  .modal-section { margin-bottom: 20px; }
+  .modal-section h4 {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .modal-section p, .modal-section li {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #b0bbd8;
+  }
+  .modal-section ul { list-style: none; }
+  .modal-section ul li { padding: 6px 0; padding-left: 16px; position: relative; }
+  .modal-section ul li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-size: 12px; }
+  .tip-box {
+    background: rgba(255,107,53,0.1);
+    border: 1px solid rgba(255,107,53,0.3);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #ffd6c4;
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+  .tip-box strong { color: var(--accent2); }
+
+  /* TEAM PANEL */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .team-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .team-card:hover { border-color: var(--accent3); }
+  .avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+  }
+  .team-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .team-role { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
+  .team-stats { display: flex; gap: 10px; justify-content: center; }
+  .tstat { text-align: center; }
+  .tstat-n { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .tstat-l { font-size: 10px; color: var(--muted); }
+  .online-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+    animation: pulse 1.5s infinite;
+  }
+  .offline-dot {
+    width: 8px; height: 8px;
+    background: var(--muted);
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+  }
+
+  .escalation-flow {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+  }
+  .esc-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 18px; }
+  .esc-steps { display: flex; gap: 0; }
+  .esc-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+  .esc-step::after {
+    content: '→';
+    position: absolute;
+    right: -10px;
+    top: 20px;
+    color: var(--muted);
+    font-size: 18px;
+  }
+  .esc-step:last-child::after { display: none; }
+  .esc-circle {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    border: 2px solid;
+  }
+  .esc-step:nth-child(1) .esc-circle { border-color: var(--accent); background: rgba(0,229,160,0.1); }
+  .esc-step:nth-child(2) .esc-circle { border-color: var(--warn); background: rgba(255,209,102,0.1); }
+  .esc-step:nth-child(3) .esc-circle { border-color: var(--accent2); background: rgba(255,107,53,0.1); }
+  .esc-step:nth-child(4) .esc-circle { border-color: var(--danger); background: rgba(255,77,109,0.1); }
+  .esc-step-title { font-size: 12px; font-weight: 600; margin-bottom: 4px; font-family: 'Syne', sans-serif; }
+  .esc-step-sub { font-size: 11px; color: var(--muted); }
+
+  /* QUICK ACTIONS */
+  .quick-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .qbtn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .qbtn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* METRICS */
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .metric-n {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .metric-l { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
+  .metric-trend { font-size: 11px; margin-top: 8px; }
+  .metric-trend.up { color: var(--accent); }
+  .metric-trend.down { color: var(--danger); }
+
+  /* PANEL TITLE */
+  .panel-heading {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .panel-sub { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* FADE IN */
+  .fade-in { animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* Highlight */
+  .hl { color: var(--accent); }
+  .hl-o { color: var(--accent2); }
+  .hl-p { color: var(--accent3); }
+
+  /* Checklist */
+  .checklist { list-style: none; }
+  .checklist li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check { color: var(--accent); font-size: 14px; }
+
+  /* Tone selector */
+  .tone-grid { display: flex; gap: 8px; margin-top: 10px; }
+  .tone-btn {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 8px 4px;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .tone-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tone-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(0,229,160,0.08); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    SupportHQ
+  </div>
+  <div class="header-tabs">
+    <button class="htab active" onclick="switchTab('ai')">🤖 AI Assistant</button>
+    <button class="htab" onclick="switchTab('scripts')">📢 Scripts</button>
+    <button class="htab" onclick="switchTab('guides')">📚 Guides</button>
+    <button class="htab" onclick="switchTab('team')">👥 Team</button>
+    <button class="htab" onclick="switchTab('metrics')">📊 Metrics</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Quick Categories</div>
+      <div class="sidebar-item active" onclick="fillProblem('billing')">
+        <span class="sidebar-icon">💳</span> Billing & Payments
+        <span class="badge">12</span>
+      </div>
+      <div class="sidebar-item" onclick="fillProblem('technical')">
+        <span class="sidebar-icon">🔧</span> Technical Issues
+        <span class="badge orange">8</span>
+      </div>
+      <div class="sidebar-item" onclick="fillProblem('account')">
+        <span class="sidebar-icon">👤</span> Account Access
+      </div>
+      <div class="sidebar-item" onclick="fillProblem('shipping')">
+        <span class="sidebar-icon">📦</span> Shipping & Orders
+      </div>
+      <div class="sidebar-item" onclick="fillProblem('refund')">
+        <span class="sidebar-icon">↩️</span> Refunds & Returns
+      </div>
+      <div class="sidebar-item" onclick="fillProblem('complaint')">
+        <span class="sidebar-icon">😤</span> Complaints
+      </div>
+      <div class="sidebar-item" onclick="fillProblem('cancel')">
+        <span class="sidebar-icon">🚫</span> Cancellations
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Response Tone</div>
+      <div class="tone-grid">
+        <div class="tone-btn selected" onclick="selectTone(this,'empathetic')">Empathetic</div>
+        <div class="tone-btn" onclick="selectTone(this,'formal')">Formal</div>
+        <div class="tone-btn" onclick="selectTone(this,'direct')">Direct</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Recent Queries</div>
+      <div class="sidebar-item" style="font-size:12px;" onclick="fillProblem('password')">
+        <span class="sidebar-icon">🔑</span> Password reset flow
+      </div>
+      <div class="sidebar-item" style="font-size:12px;" onclick="fillProblem('double')">
+        <span class="sidebar-icon">💳</span> Double charged
+      </div>
+      <div class="sidebar-item" style="font-size:12px;" onclick="fillProblem('delayed')">
+        <span class="sidebar-icon">📦</span> Order delayed 7 days
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Escalation</div>
+      <div class="sidebar-item" style="color: var(--warn)">
+        <span class="sidebar-icon">⚡</span> Priority Queue
+        <span class="badge" style="background:var(--warn);color:#000">3</span>
+      </div>
+      <div class="sidebar-item" style="color: var(--danger)">
+        <span class="sidebar-icon">🔥</span> Urgent Tickets
+        <span class="badge" style="background:var(--danger)">1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN PANELS -->
+  <div class="main">
+
+    <!-- AI ASSISTANT PANEL -->
+    <div class="panel active fade-in" id="panel-ai">
+      <div class="ai-header">
+        <div>
+          <div class="ai-title">Customer Support<br><span class="hl">AI Command Centre</span></div>
+          <div class="ai-sub">Enter any customer problem → get scripts, guides, steps & escalation paths instantly</div>
+        </div>
+        <div class="status-pill">
+          <div class="status-dot"></div>
+          AI Online
+        </div>
+      </div>
+
+      <div class="problem-box">
+        <label>Describe the Customer Problem</label>
+        <div class="problem-grid">
+          <select id="problemType">
+            <option value="">— Problem Category —</option>
+            <option value="billing">💳 Billing & Payment</option>
+            <option value="technical">🔧 Technical / App Issue</option>
+            <option value="account">👤 Account & Login</option>
+            <option value="shipping">📦 Shipping & Delivery</option>
+            <option value="refund">↩️ Refund & Return</option>
+            <option value="complaint">😤 Complaint</option>
+            <option value="cancel">🚫 Cancellation</option>
+            <option value="other">✨ Other</option>
+          </select>
+          <select id="urgency">
+            <option value="normal">🟢 Normal Priority</option>
+            <option value="high">🟡 High Priority</option>
+            <option value="urgent">🔴 Urgent / Escalate</option>
+          </select>
+        </div>
+        <textarea class="problem-input" id="problemText" placeholder="e.g. Customer was charged twice for the same order last Tuesday, says their bank shows two transactions of $49.99 each. They're upset and threatening to dispute with their bank..."></textarea>
+        <div style="display:flex; gap:12px; margin-top:12px; align-items:center;">
+          <button class="btn-solve" onclick="solveProblem()">
+            ⚡ Generate Full Support Package
+          </button>
+          <div style="font-size:12px; color:var(--muted)">Includes script · steps · escalation · template</div>
+        </div>
+      </div>
+
+      <div class="loading-bar" id="loadingBar">
+        <div class="spinner"></div>
+        <div class="loading-text">Generating your support package...</div>
+      </div>
+
+      <div id="responseArea">
+        <div class="response-grid">
+          <div class="response-card green">
+            <div class="card-label green">✦ Opening Script</div>
+            <button class="copy-btn" onclick="copyCard('openScript')">Copy</button>
+            <div class="card-content script" id="openScript"></div>
+          </div>
+          <div class="response-card orange">
+            <div class="card-label orange">⚡ Step-by-Step Resolution</div>
+            <ul class="step-list" id="stepList"></ul>
+          </div>
+          <div class="response-card purple full-width">
+            <div class="card-label purple">📢 Full Phone / Chat Script</div>
+            <button class="copy-btn" onclick="copyCard('fullScript')">Copy</button>
+            <div class="card-content script" id="fullScript"></div>
+          </div>
+          <div class="response-card green">
+            <div class="card-label green">📧 Email Template</div>
+            <button class="copy-btn" onclick="copyCard('emailTemplate')">Copy</button>
+            <div class="card-content" id="emailTemplate" style="font-size:12px;"></div>
+          </div>
+          <div class="response-card red">
+            <div class="card-label red">🔥 Escalation Path</div>
+            <div class="card-content" id="escalationContent" style="font-size:13px;"></div>
+          </div>
+          <div class="response-card orange full-width">
+            <div class="card-label orange">💡 Pro Tips & Watchouts</div>
+            <ul class="checklist" id="proTips"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCRIPTS PANEL -->
+    <div class="panel" id="panel-scripts">
+      <div class="panel-heading">Speech Scripts & Prompts</div>
+      <div class="panel-sub">Pre-built scripts for every situation — click to expand the full flow</div>
+
+      <div class="quick-bar">
+        <button class="qbtn">🎯 All Scripts</button>
+        <button class="qbtn">📞 Phone</button>
+        <button class="qbtn">💬 Live Chat</button>
+        <button class="qbtn">📧 Email</button>
+      </div>
+
+      <div class="scripts-grid">
+        <div class="script-card" onclick="showScript('angry')">
+          <div class="script-emoji">😤</div>
+          <div class="script-title">Angry Customer De-escalation</div>
+          <div class="script-desc">Calm an upset customer and regain trust quickly</div>
+        </div>
+        <div class="script-card" onclick="showScript('refund')">
+          <div class="script-emoji">💰</div>
+          <div class="script-title">Refund Request</div>
+          <div class="script-desc">Handle refund requests within policy with empathy</div>
+        </div>
+        <div class="script-card" onclick="showScript('technical')">
+          <div class="script-emoji">🛠️</div>
+          <div class="script-title">Technical Troubleshoot</div>
+          <div class="script-desc">Walk through tech issues step-by-step efficiently</div>
+        </div>
+        <div class="script-card" onclick="showScript('cancel')">
+          <div class="script-emoji">🔄</div>
+          <div class="script-title">Cancellation Save</div>
+          <div class="script-desc">Retain customers who want to cancel subscriptions</div>
+        </div>
+        <div class="script-card" onclick="showScript('billing')">
+          <div class="script-emoji">💳</div>
+          <div class="script-title">Billing Dispute</div>
+          <div class="script-desc">Resolve billing errors and double charges</div>
+        </div>
+        <div class="script-card" onclick="showScript('shipping')">
+          <div class="script-emoji">📦</div>
+          <div class="script-title">Delayed Shipment</div>
+          <div class="script-desc">Manage expectations on delayed or lost orders</div>
+        </div>
+        <div class="script-card" onclick="showScript('escalate')">
+          <div class="script-emoji">⬆️</div>
+          <div class="script-title">Escalation Handoff</div>
+          <div class="script-desc">Smoothly transfer to supervisor or specialist</div>
+        </div>
+        <div class="script-card" onclick="showScript('closing')">
+          <div class="script-emoji">✅</div>
+          <div class="script-title">Positive Close</div>
+          <div class="script-desc">End every call leaving the customer feeling great</div>
+        </div>
+        <div class="script-card" onclick="showScript('opening')">
+          <div class="script-emoji">👋</div>
+          <div class="script-title">Universal Opening</div>
+          <div class="script-desc">Perfect opening for any type of customer contact</div>
+        </div>
+      </div>
+
+      <div class="script-viewer" id="scriptViewer">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+          <div>
+            <h3 id="scriptViewerTitle"></h3>
+            <div class="sub" id="scriptViewerSub"></div>
+          </div>
+          <button class="copy-btn" onclick="copyScriptViewer()" style="float:none;font-size:13px;padding:8px 18px;">📋 Copy Full Script</button>
+        </div>
+        <div id="scriptViewerContent"></div>
+      </div>
+    </div>
+
+    <!-- GUIDES PANEL -->
+    <div class="panel" id="panel-guides">
+      <div class="guides-hero">
+        <div>
+          <div class="guides-hero-title">Knowledge Base & Guides</div>
+          <div class="guides-hero-sub">Everything you need to resolve any situation with confidence. Tap a guide to open the full walkthrough, tips, and word-for-word prompts.</div>
+        </div>
+        <div class="guides-visual">📚</div>
+      </div>
+
+      <div class="guide-category">
+        <div class="guide-cat-title">Core Processes</div>
+        <div class="guide-items">
+          <div class="guide-item" onclick="openGuide('empathy')">
+            <div class="guide-icon">❤️</div>
+            <div class="guide-info">
+              <h4>Empathy Framework</h4>
+              <p>The LEAP method for connecting with upset customers</p>
+            </div>
+          </div>
+          <div class="guide-item" onclick="openGuide('active-listening')">
+            <div class="guide-icon">👂</div>
+            <div class="guide-info">
+              <h4>Active Listening</h4>
+              <p>Techniques to understand the real problem fast</p>
+            </div>
+          </div>
+          <div class="guide-item" onclick="openGuide('first-contact')">
+            <div class="guide-icon">🎯</div>
+            <div class="guide-info">
+              <h4>First Contact Resolution</h4>
+              <p>How to solve it in one touch, every time</p>
+            </div>
+          </div>
+          <div class="guide-item" onclick="openGuide('documentation')">
+            <div class="guide-icon">📝</div>
+            <div class="guide-info">
+              <h4>Ticket Documentation</h4>
+              <p>How to write notes that help the whole team</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-category">
+        <div class="guide-cat-title">Difficult Situations</div>
+        <div class="guide-items">
+          <div class="guide-item" onclick="openGuide('angry')">
+            <div class="guide-icon">🔥</div>
+            <div class="guide-info">
+              <h4>Handling Angry Customers</h4>
+              <p>Step-by-step de-escalation that actually works</p>
+            </div>
+          </div>
+          <div class="guide-item" onclick="openGuide('fraud')">
+            <div class="guide-icon">🚨</div>
+            <div class="guide-info">
+              <h4>Suspected Fraud Calls</h4>
+              <p>Protect accounts without alienating real customers</p>
+            </div>
+          </div>
+          <div class="guide-item" onclick="openGuide('media')">
+            <div class="guide-icon">📰</div>
+            <div class="guide-info">
+              <h4>Social Media Escalations</h4>
+              <p>When a customer goes public — here's the playbook</p>
+            </div>
+          </div>
+          <div class="guide-item" onclick="openGuide('threat')">
+            <div class="guide-icon">⚖️</div>
+            <div class="guide-info">
+              <h4>Legal Threats & Chargebacks</h4>
+              <p>What to say, what NOT to say, when to escalate</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-category">
+        <div class="guide-cat-title">Policies & Procedures</div>
+        <div class="guide-items">
+          <div class="guide-item" onclick="openGuide('refund-policy')">
+            <div class="guide-icon">↩️</div>
+            <div class="guide-info">
+              <h4>Refund Policy Guide</h4>
+              <p>Full policy breakdown with exception scenarios</p>
+            </div>
+          </div>
+          <div class="guide-item" onclick="openGuide('data-privacy')">
+            <div class="guide-icon">🔒</div>
+            <div class="guide-info">
+              <h4>Data Privacy Requests</h4>
+              <p>GDPR / privacy deletion request handling</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM PANEL -->
+    <div class="panel" id="panel-team">
+      <div class="panel-heading">Support Team</div>
+      <div class="panel-sub">Who to contact, what they handle, and escalation paths</div>
+
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-n hl">94%</div>
+          <div class="metric-l">Satisfaction Score</div>
+          <div class="metric-trend up">↑ 3% this week</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-n" style="color:var(--accent3)">2m 14s</div>
+          <div class="metric-l">Avg Response Time</div>
+          <div class="metric-trend up">↑ Improved</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-n hl-o">87%</div>
+          <div class="metric-l">First Contact Res.</div>
+          <div class="metric-trend down">↓ 2% vs last week</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-n">247</div>
+          <div class="metric-l">Tickets Today</div>
+          <div class="metric-trend up">↑ Team online</div>
+        </div>
+      </div>
+
+      <div class="section-title">🟢 Currently Online</div>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="avatar" style="background:rgba(0,229,160,0.15);color:var(--accent)">SR</div>
+          <div class="team-name">Sarah Reynolds</div>
+          <div class="team-role"><span class="online-dot"></span>Tier 1 Lead</div>
+          <div class="team-stats">
+            <div class="tstat"><div class="tstat-n hl">98%</div><div class="tstat-l">CSAT</div></div>
+            <div class="tstat"><div class="tstat-n">47</div><div class="tstat-l">Today</div></div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="avatar" style="background:rgba(124,111,255,0.15);color:var(--accent3)">MK</div>
+          <div class="team-name">Marcus Kim</div>
+          <div class="team-role"><span class="online-dot"></span>Tech Specialist</div>
+          <div class="team-stats">
+            <div class="tstat"><div class="tstat-n hl">95%</div><div class="tstat-l">CSAT</div></div>
+            <div class="tstat"><div class="tstat-n">31</div><div class="tstat-l">Today</div></div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="avatar" style="background:rgba(255,107,53,0.15);color:var(--accent2)">JP</div>
+          <div class="team-name">Julia Park</div>
+          <div class="team-role"><span class="online-dot"></span>Billing Expert</div>
+          <div class="team-stats">
+            <div class="tstat"><div class="tstat-n hl">96%</div><div class="tstat-l">CSAT</div></div>
+            <div class="tstat"><div class="tstat-n">38</div><div class="tstat-l">Today</div></div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="avatar" style="background:rgba(255,77,109,0.15);color:var(--danger)">DT</div>
+          <div class="team-name">David Torres</div>
+          <div class="team-role"><span class="offline-dot"></span>Tier 2 Support</div>
+          <div class="team-stats">
+            <div class="tstat"><div class="tstat-n">92%</div><div class="tstat-l">CSAT</div></div>
+            <div class="tstat"><div class="tstat-n">0</div><div class="tstat-l">Today</div></div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="avatar" style="background:rgba(255,209,102,0.15);color:var(--warn)">AC</div>
+          <div class="team-name">Amara Chen</div>
+          <div class="team-role"><span class="online-dot"></span>Senior Agent</div>
+          <div class="team-stats">
+            <div class="tstat"><div class="tstat-n hl">97%</div><div class="tstat-l">CSAT</div></div>
+            <div class="tstat"><div class="tstat-n">52</div><div class="tstat-l">Today</div></div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="avatar" style="background:rgba(0,229,160,0.1);color:var(--accent)">TM</div>
+          <div class="team-name">Tom Mitchell</div>
+          <div class="team-role"><span class="online-dot"></span>Team Manager</div>
+          <div class="team-stats">
+            <div class="tstat"><div class="tstat-n hl">—</div><div class="tstat-l">CSAT</div></div>
+            <div class="tstat"><div class="tstat-n">✓</div><div class="tstat-l">Avail.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="escalation-flow">
+        <div class="esc-title">Escalation Path</div>
+        <div class="esc-steps">
+          <div class="esc-step">
+            <div class="esc-circle">🙋</div>
+            <div class="esc-step-title">Tier 1</div>
+            <div class="esc-step-sub">Front-line agent<br>0–8 min</div>
+          </div>
+          <div class="esc-step">
+            <div class="esc-circle">⭐</div>
+            <div class="esc-step-title">Senior Agent</div>
+            <div class="esc-step-sub">Complex cases<br>8–20 min</div>
+          </div>
+          <div class="esc-step">
+            <div class="esc-circle">🏆</div>
+            <div class="esc-step-title">Team Lead</div>
+            <div class="esc-step-sub">Escalations<br>20–40 min</div>
+          </div>
+          <div class="esc-step">
+            <div class="esc-circle">👔</div>
+            <div class="esc-step-title">Manager</div>
+            <div class="esc-step-sub">Legal / Media<br>Immediate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- METRICS PANEL -->
+    <div class="panel" id="panel-metrics">
+      <div class="panel-heading">Live Metrics Dashboard</div>
+      <div class="panel-sub">Today's performance at a glance</div>
+
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-n hl">94%</div>
+          <div class="metric-l">CSAT Score</div>
+          <div class="metric-trend up">↑ 3pts vs yesterday</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-n" style="color:var(--accent3)">2:14</div>
+          <div class="metric-l">Avg Handle Time</div>
+          <div class="metric-trend up">↑ -18s improvement</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-n hl-o">87%</div>
+          <div class="metric-l">FCR Rate</div>
+          <div class="metric-trend down">↓ -2pts</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-n">247</div>
+          <div class="metric-l">Total Tickets</div>
+          <div class="metric-trend up">↑ +14 vs avg</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="response-card green">
+          <div class="card-label green">📊 Ticket Breakdown</div>
+          <ul class="checklist">
+            <li><span class="check">💳</span> Billing Issues <span style="margin-left:auto;color:var(--accent)">82 (33%)</span></li>
+            <li><span class="check">🔧</span> Technical <span style="margin-left:auto;color:var(--accent)">67 (27%)</span></li>
+            <li><span class="check">📦</span> Shipping <span style="margin-left:auto;color:var(--accent)">48 (19%)</span></li>
+            <li><span class="check">↩️</span> Refunds <span style="margin-left:auto;color:var(--accent)">31 (13%)</span></li>
+            <li><span class="check">✨</span> Other <span style="margin-left:auto;color:var(--accent)">19 (8%)</span></li>
+          </ul>
+        </div>
+        <div class="response-card purple">
+          <div class="card-label purple">⚡ Resolution Speed</div>
+          <ul class="checklist">
+            <li><span style="color:var(--accent)">✔</span> Under 2 min <span style="margin-left:auto;color:var(--accent3)">112 tickets</span></li>
+            <li><span style="color:var(--accent)">✔</span> 2–5 min <span style="margin-left:auto;color:var(--accent3)">89 tickets</span></li>
+            <li><span style="color:var(--warn)">⚡</span> 5–15 min <span style="margin-left:auto;color:var(--accent3)">31 tickets</span></li>
+            <li><span style="color:var(--accent2)">⬆</span> Escalated <span style="margin-left:auto;color:var(--danger)">15 tickets</span></li>
+            <li><span style="color:var(--danger)">🔥</span> Still open <span style="margin-left:auto;color:var(--danger)">4 tickets</span></li>
+          </ul>
+        </div>
+        <div class="response-card orange full-width">
+          <div class="card-label orange">🎯 Team Performance Goals</div>
+          <ul class="checklist">
+            <li><span class="check">✅</span> CSAT Target 90% <span style="margin-left:auto;color:var(--accent)">94% ACHIEVED</span></li>
+            <li><span class="check">✅</span> Response &lt; 3 min <span style="margin-left:auto;color:var(--accent)">2:14 ACHIEVED</span></li>
+            <li><span style="color:var(--accent2)">⚡</span> FCR Target 90% <span style="margin-left:auto;color:var(--warn)">87% IN PROGRESS</span></li>
+            <li><span class="check">✅</span> Zero open > 24h <span style="margin-left:auto;color:var(--accent)">ACHIEVED</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- GUIDE MODAL -->
+<div class="guide-modal" id="guideModal">
+  <div class="guide-modal-inner">
+    <button class="modal-close" onclick="closeGuide()">✕</button>
+    <div class="modal-title" id="guideTitle"></div>
+    <div class="modal-sub" id="guideSub"></div>
+    <div id="guideContent"></div>
+  </div>
+</div>
+
+<script>
+// ===================== TAB SWITCHING =====================
+function switchTab(tab) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.htab').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active', 'fade-in');
+  event.target.classList.add('active');
+}
+
+// ===================== TONE SELECTOR =====================
+let selectedTone = 'empathetic';
+function selectTone(el, tone) {
+  document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTone = tone;
+}
+
+// ===================== FILL PROBLEM =====================
+const problemTemplates = {
+  billing: { type: 'billing', text: 'Customer was charged twice for their subscription. Their bank statement shows two transactions of the same amount on the same day. They are frustrated and want an immediate refund.' },
+  technical: { type: 'technical', text: 'Customer cannot log into the app. They receive an error message "Session expired" on every attempt. They have already tried clearing their cache and reinstalling the app.' },
+  account: { type: 'account', text: 'Customer forgot their password and is not receiving the reset email. They say they have checked spam and junk folders. Account is linked to their work email which may have filters.' },
+  shipping: { type: 'shipping', text: 'Customer ordered 8 days ago and tracking has not updated in 5 days. It was supposed to arrive within 3-5 business days. They need the item urgently for an event this weekend.' },
+  refund: { type: 'refund', text: 'Customer wants to return a product purchased 20 days ago. Our policy is 14 days but they say they were not aware of the return window. The item is unopened and in original packaging.' },
+  complaint: { type: 'complaint', text: 'Customer had a very poor experience with a previous support agent who they felt was rude and dismissive. They are now escalating and threatening to leave a public review about the service.' },
+  cancel: { type: 'cancel', text: 'Customer wants to cancel their annual subscription they renewed 2 weeks ago. They say they found a cheaper competitor and feel our pricing is too high for what they get.' },
+  password: { type: 'account', text: 'Customer cannot reset their password. Reset email is not arriving. They have an event tonight and need access urgently.' },
+  double: { type: 'billing', text: 'Customer was charged twice — double charged $49.99 on the same order last Tuesday. Bank confirms two separate transactions.' },
+  delayed: { type: 'shipping', text: 'Order has been delayed 7 days past estimated delivery. Tracking shows stuck at distribution centre. Customer is very upset.' },
+};
+
+function fillProblem(key) {
+  const t = problemTemplates[key];
+  if (!t) return;
+  document.getElementById('problemType').value = t.type;
+  document.getElementById('problemText').value = t.text;
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  // Switch to AI panel
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.htab').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-ai').classList.add('active');
+  document.querySelector('.htab').classList.add('active');
+}
+
+// ===================== AI PROBLEM SOLVER =====================
+const solutions = {
+  billing: {
+    open: `"Thank you for contacting us today. I completely understand how frustrating it must be to see an unexpected charge — that's the last thing we'd want for you. My name is [Your Name], and I'm going to make this right for you today."`,
+    steps: [
+      'Verify identity — confirm name, email address, and last 4 digits of card on file',
+      'Pull up billing history and confirm the duplicate transaction',
+      'Apologise sincerely: "I can see exactly what happened here, and I\'m truly sorry for this"',
+      'Process the refund immediately if within policy, or escalate to billing team',
+      'Provide refund reference number and expected timeline (3-5 business days)',
+      'Offer a goodwill gesture (discount, credit) for the inconvenience',
+      'Confirm resolution and ask if there is anything else you can help with',
+    ],
+    script: `AGENT: "Thank you for reaching out. I can see the duplicate charge on your account and I sincerely apologise — that should absolutely not have happened. I've flagged this as high priority.
+
+[After verification] I can confirm I'm processing a full refund of [AMOUNT] right now. You'll receive a confirmation email within the next few minutes, and the funds will be back in your account within 3-5 business days.
+
+Is there anything else I can do for you today? I want to make sure you leave this call feeling taken care of."`,
+    email: `Subject: Your Refund is Being Processed — [Ticket #XXX]
+
+Hi [Customer Name],
+
+I'm reaching out regarding the duplicate charge on your account dated [DATE].
+
+After reviewing your account, I can confirm this was an error on our end, and I sincerely apologise for the inconvenience this has caused.
+
+I have processed a full refund of [AMOUNT]. Please allow 3–5 business days for this to reflect in your account.
+
+Refund Reference: [REF#]
+
+If you have any questions, please don't hesitate to reach out.
+
+Warm regards,
+[Agent Name] | Support Team`,
+    escalation: `🟡 Escalate to Billing Team if:\n• Amount exceeds $500\n• Multiple duplicate charges\n• Customer has disputed with bank\n\n🔴 Escalate to Manager if:\n• Customer threatens chargeback/legal action\n• 3+ billing issues in 30 days\n• Social media threat`,
+    tips: [
+      'Never say "That\'s not possible" — always verify before denying',
+      'Offer the refund proactively — don\'t make them ask twice',
+      'Note any bank dispute risk in the ticket immediately',
+      'If customer is very upset, offer $10–15 credit as goodwill gesture',
+      'Always send a follow-up email with the refund reference number',
+    ],
+  },
+  technical: {
+    open: `"Thanks so much for letting us know about this — I want to get this sorted for you straight away. Technical issues are incredibly frustrating, especially when you need access right now. Let's work through this together."`,
+    steps: [
+      'Gather details: device type, OS version, app version, error message exactly',
+      'Ask when the issue started and if anything changed recently',
+      'Basic checks: ask to force-close and reopen the app',
+      'Clear app cache (Settings > App > Clear Cache)',
+      'Sign out and sign back in using a fresh browser/incognito window',
+      'Uninstall and reinstall the latest version of the app',
+      'If unresolved, collect device logs and escalate to Tier 2 Tech team',
+    ],
+    script: `AGENT: "Let's get this fixed. I'm going to walk you through a few steps — most customers find this resolves the issue quickly.
+
+First, can you tell me what device you're on and what error message you're seeing exactly?
+
+[After gathering info] Great — let's try this: Close the app completely, then reopen it. [Pause] Still seeing the error?
+
+[If yes] No problem — let's try clearing the app cache. Go to Settings... [Guide through steps]
+
+[If resolved] Excellent! I'm glad that worked. I'll make a note on your account. Is there anything else I can help with today?"`,
+    email: `Subject: Update on Your Technical Issue — [Ticket #XXX]
+
+Hi [Customer Name],
+
+Thank you for contacting us about the issue you're experiencing with [APP/FEATURE].
+
+Here are the troubleshooting steps we recommend trying:
+
+1. Force-close and reopen the application
+2. Clear your app cache (Settings > [App] > Storage > Clear Cache)
+3. Sign out, then sign back in
+4. If on mobile, uninstall and reinstall the latest version
+
+If these steps don't resolve the issue, please reply to this email and we'll escalate to our technical team immediately.
+
+We're here to help,
+[Agent Name] | Technical Support`,
+    escalation: `🟡 Escalate to Tech Tier 2 if:\n• Basic troubleshooting fails after 2 attempts\n• Issue affects multiple users (possible outage)\n• Data loss or security concern suspected\n\n🔴 Escalate to Engineering if:\n• Confirmed system-wide bug\n• Customer data potentially compromised`,
+    tips: [
+      'Always ask for the EXACT error message — don\'t guess',
+      'Check your status page first — it might be a known outage',
+      'Screen recording is gold — ask if they can send one',
+      'Be patient — not all customers are tech-savvy',
+      'Document EVERY step you tried in the ticket notes',
+    ],
+  },
+  account: {
+    open: `"I completely understand how stressful it is to be locked out — especially if you need access urgently. I'm going to do everything I can to get you back in as quickly as possible. Let's start right now."`,
+    steps: [
+      'Verify identity using 3 security factors (name, email, last order, phone)',
+      'Check if account exists — search by email AND phone number',
+      'Check if account is locked, suspended, or email unverified',
+      'Initiate a manual password reset from admin panel',
+      'Whitelist their email domain if corporate email is filtering resets',
+      'Send reset link and stay on the line while they check email',
+      'If still no access, create a support ticket for account team',
+    ],
+    script: `AGENT: "Let me pull up your account right now. For security, I'll need to verify a few details — can you confirm the email address linked to the account?
+
+[After verification] I can see your account here. I'm going to send a fresh password reset link to [EMAIL] right now. 
+
+Can you check your inbox — and also your spam/junk folder? Sometimes these emails get caught by filters...
+
+[If no email] No worries — I'm going to manually reset this on my end and give you a temporary access code. Have you got something to write with?"`,
+    email: `Subject: Account Access — Action Required [Ticket #XXX]
+
+Hi [Customer Name],
+
+Thank you for contacting us. I've initiated a manual password reset for your account.
+
+Please click the secure link below within 24 hours:
+[RESET LINK]
+
+If you don't see this email, please check your spam/junk folder or whitelist noreply@company.com.
+
+Still having trouble? Reply to this email and we'll sort it straight away.
+
+[Agent Name] | Account Support`,
+    escalation: `🟡 Escalate to Account Team if:\n• Identity cannot be verified\n• Account shows signs of compromise\n• Multiple failed reset attempts\n\n🔴 Escalate to Security if:\n• Suspected account takeover\n• Unauthorised transactions detected\n• Customer reports phishing`,
+    tips: [
+      'Never share account details before completing full verification',
+      'Check if the email has a typo — very common issue',
+      'Corporate email filters block reset links frequently — suggest personal email',
+      'If in a rush, offer temporary access code instead of email reset',
+      'Always log every verification attempt in the ticket',
+    ],
+  },
+  shipping: {
+    open: `"I completely understand your concern — when something doesn't arrive on time, it's really stressful, especially if you needed it by a certain date. Let me check this right now and find out exactly what's happening with your order."`,
+    steps: [
+      'Pull up order and get exact tracking number',
+      'Check carrier tracking portal for real-time status',
+      'Determine last known location and when tracking last updated',
+      'Check for carrier alerts, weather delays, or customs holds',
+      'Contact carrier directly if tracking is stale more than 48h',
+      'Offer to reship if lost, or provide compensation if significantly delayed',
+      'Set a follow-up reminder and update customer proactively',
+    ],
+    script: `AGENT: "I'm pulling up your tracking information right now. I can see your order [ORDER#] — it looks like the last scan was at [LOCATION] on [DATE].
+
+I'm going to flag this with our shipping team immediately. You should receive an update within 24 hours.
+
+In the meantime — would you like me to arrange a replacement to be sent out right away, or would you prefer to wait for the original parcel to arrive? Either way, I want to make sure you're not left waiting."`,
+    email: `Subject: Update on Your Order [ORDER#]
+
+Hi [Customer Name],
+
+Thank you for reaching out about your order. I'm sorry it hasn't arrived yet — I know how frustrating this must be.
+
+I've escalated this to our shipping team and flagged it as urgent with the carrier.
+
+Current Status: [TRACKING STATUS]
+Last Update: [DATE & LOCATION]
+
+I'll personally follow up with you within 24 hours with an update. If you have not received your order within [X days], I will arrange a replacement shipment at no additional cost.
+
+Thank you for your patience.
+[Agent Name] | Support Team`,
+    escalation: `🟡 Escalate to Fulfilment if:\n• Tracking shows delivered but customer says not received\n• International customs hold > 10 days\n• High-value item (>$200)\n\n🔴 Manager if:\n• Customer threatens to dispute payment\n• Item needed for medical/urgent reasons`,
+    tips: [
+      'Always check the carrier portal yourself — don\'t just trust what system shows',
+      'If tracking is stuck 48h+, treat as potentially lost and act proactively',
+      'Offer the reship FIRST — don\'t make them ask',
+      'If it\'s a gift or event item, treat with extra urgency',
+      'Never promise a specific delivery date you can\'t guarantee',
+    ],
+  },
+  refund: {
+    open: `"Thank you for reaching out. I'd love to help you with this return. Let me take a look at your order and we'll find the best solution together — I want to make sure you're completely happy."`,
+    steps: [
+      'Pull up order details and verify purchase date and item condition',
+      'Check if within standard return window (14 days)',
+      'If outside window, check if exception policy applies',
+      'Assess condition: unopened items often qualify for extended return',
+      'If within policy: issue full refund and provide return label',
+      'If outside policy but borderline: offer store credit as compromise',
+      'Document exception reason in ticket for audit trail',
+    ],
+    script: `AGENT: "I've pulled up your order. I can see it was placed on [DATE] and I understand you'd like to return it.
+
+Our standard return window is 14 days, and I can see you're [X days past/within] that window. 
+
+[If outside window] While our standard policy is 14 days, given that the item is unopened and you weren't clearly informed of our return window, I'd like to make an exception for you today. I can offer you [full refund/store credit]. Does that work for you?
+
+I'll send you a prepaid return label by email. Once we receive the item, your refund will be processed within 5 business days."`,
+    email: `Subject: Your Return is Approved — [Ticket #XXX]
+
+Hi [Customer Name],
+
+Great news — I've approved your return for Order [ORDER#].
+
+Attached you'll find your prepaid return label. Simply drop the package at any [CARRIER] location.
+
+Once received, your refund of [AMOUNT] will be processed within 5 business days.
+
+Return Reference: [REF#]
+
+Thank you for giving us the chance to make this right.
+[Agent Name] | Returns Team`,
+    escalation: `🟡 Escalate to Returns Team if:\n• Damaged goods claim (needs photos)\n• Item over $300 value\n• Customer purchased via third-party\n\n🔴 Manager if:\n• Suspicion of return fraud\n• Customer threatening legal/consumer rights claim`,
+    tips: [
+      'Unopened items are almost always worth an exception — it costs goodwill to refuse',
+      'Never say "policy is policy" — always offer an alternative',
+      'Store credit is often better than a refund for retention',
+      'Ask why they\'re returning — you might solve the real problem',
+      'Document exception reasons carefully for your manager',
+    ],
+  },
+  complaint: {
+    open: `"I'm so sorry to hear about your experience — that is absolutely not the standard we hold ourselves to, and I completely understand why you're upset. I want to personally make sure this is addressed properly today."`,
+    steps: [
+      'Let the customer speak — do not interrupt, just listen fully',
+      'Acknowledge and validate: "You\'re completely right to feel that way"',
+      'Apologise sincerely on behalf of the company (not just the agent)',
+      'Investigate: pull up previous ticket notes to understand what happened',
+      'Explain what you can do, not what you can\'t do',
+      'Offer tangible goodwill: credit, discount, priority service',
+      'Escalate feedback to team leader for coaching opportunity',
+    ],
+    script: `AGENT: "First, thank you so much for taking the time to tell us about this. I'm truly sorry. What you described is not okay, and it's not how we train our team to handle things.
+
+Please know that this feedback is incredibly valuable and I'm going to make sure it gets to the right people.
+
+Right now, I want to focus on making things right for you. Is it okay if I [offer resolution]?
+
+And I'd like to offer you [credit/discount] as an acknowledgment that we let you down. We genuinely value your business and want to earn back your trust."`,
+    email: `Subject: Regarding Your Recent Experience — We're Sorry
+
+Hi [Customer Name],
+
+Thank you for taking the time to share your experience with us. I want to personally apologise — what you described falls short of the standard of care we strive to provide.
+
+Your feedback has been shared with our team leadership and we're treating this seriously.
+
+As an acknowledgment of the inconvenience caused, I'd like to offer you [OFFER].
+
+We'd love the opportunity to restore your confidence in us.
+
+Sincerely,
+[Agent Name] | Customer Experience Team`,
+    escalation: `🟡 Escalate to Team Lead if:\n• Complaint is about a named agent\n• Customer requests to speak to a manager\n• Customer threatens public review\n\n🔴 Manager immediately if:\n• Discrimination or harassment complaint\n• Customer mentions legal action\n• Media / press involvement`,
+    tips: [
+      'Never defend the previous agent to the customer',
+      'The phrase "I understand" alone isn\'t enough — be specific',
+      'Give them your direct name so they feel ownership',
+      'A genuine apology + small gesture resolves 80% of complaints',
+      'Always loop in team lead — it\'s a coaching opportunity',
+    ],
+  },
+  cancel: {
+    open: `"I'm sorry to hear you're thinking of cancelling — I'd love to understand what's led to this decision, because if there's anything at all we can do to address it, I want to try. You're a valued customer and your experience matters to us."`,
+    steps: [
+      'Ask open question: "Can you tell me what\'s led you to this decision today?"',
+      'Listen carefully — identify the REAL objection (price/features/competitor)',
+      'Acknowledge their concern genuinely — don\'t dismiss it',
+      'Present relevant retention offer (discount, pause, feature unlock)',
+      'If price: offer a reduced plan or 2-month pause option',
+      'If competitor: highlight unique value props without badmouthing',
+      'If still cancelling: accept gracefully and offer easy return path',
+    ],
+    script: `AGENT: "I hear you — and I appreciate you giving me the chance to speak with you before making a final decision.
+
+[After listening] That makes complete sense. If I could offer you [X]% off for the next [Y months/year], would that make a difference? I'd hate to lose you over pricing when there's something I can do about it.
+
+[If they mention competitor] I completely understand wanting to explore other options. One thing I'd love to share is [KEY VALUE PROP] — something we do differently that a lot of customers tell us they can't find elsewhere.
+
+[If firm] Of course, I'll process that for you right now. And please know — if you ever want to come back, your account and history will be saved. The door is always open."`,
+    email: `Subject: We'd hate to see you go — Can we help?
+
+Hi [Customer Name],
+
+I noticed your cancellation request and wanted to reach out personally before processing it.
+
+Your feedback matters to us. If there's a specific issue that brought you to this decision, I'd love the chance to address it.
+
+As a valued customer, I can offer you:
+• [OFFER 1 — e.g., 30% off for 3 months]
+• [OFFER 2 — e.g., Pause your account for up to 2 months]
+
+If you'd still like to proceed, I completely understand and will action this straight away. No hard feelings — and the door is always open.
+
+[Agent Name]`,
+    escalation: `🟡 Escalate to Retention Specialist if:\n• High-value account (>$500/year)\n• Enterprise or business customer\n• Competitor quote provided\n\n🔴 Manager if:\n• Mass cancellations from same company\n• Customer has public platform / influence`,
+    tips: [
+      'Ask "What would make you stay?" — you\'ll often be surprised',
+      'Never process the cancel without a retention attempt first',
+      'A pause offer is often better than a cancellation',
+      'Accept gracefully if they insist — bad exits create bad reviews',
+      'Always note cancellation reason in CRM — it\'s valuable data',
+    ],
+  },
+  other: {
+    open: `"Thank you for reaching out — I'm happy to help you with this today. Let me make sure I fully understand the situation so I can get you the best possible resolution."`,
+    steps: [
+      'Gather all relevant information before jumping to solutions',
+      'Confirm understanding by summarising back to the customer',
+      'Check internal knowledge base for similar cases',
+      'If unsure, put customer on a brief hold to consult with team',
+      'Provide clear next steps with specific timeframes',
+      'Confirm the customer is satisfied before ending interaction',
+      'Document the resolution thoroughly for future reference',
+    ],
+    script: `AGENT: "Thank you for that context — let me make sure I understand correctly. You're saying that [SUMMARY]. Is that right?
+
+[After confirmation] Great. Here's what I'm going to do for you...
+
+[RESOLUTION STEPS]
+
+Does that all make sense? Is there anything else I can help clarify before we wrap up today?"`,
+    email: `Subject: Re: Your Enquiry — [Ticket #XXX]
+
+Hi [Customer Name],
+
+Thank you for contacting us. I'm looking into this for you now.
+
+[SUMMARY OF ISSUE]
+
+Here's what I've done / will do:
+[ACTION TAKEN]
+
+Expected timeline: [TIMEFRAME]
+
+Please don't hesitate to reach out if you need anything else.
+
+[Agent Name] | Support Team`,
+    escalation: `🟡 Escalate if:\n• Issue is outside your area of expertise\n• Resolution requires system access you don't have\n• Customer is dissatisfied after first resolution attempt\n\n🔴 Manager if:\n• High-value customer complaint\n• Legal or compliance matter`,
+    tips: [
+      'When in doubt, ask — it\'s better than guessing wrong',
+      'Always set clear expectations on timeframes',
+      'One follow-up email always increases customer satisfaction',
+      'Document unusual cases — they help build your team\'s knowledge base',
+      'End every interaction by checking satisfaction before closing',
+    ],
+  }
+};
+
+function solveProblem() {
+  const type = document.getElementById('problemType').value;
+  const text = document.getElementById('problemText').value.trim();
+  if (!text) { alert('Please describe the customer problem first.'); return; }
+
+  const key = type || 'other';
+  const sol = solutions[key] || solutions['other'];
+
+  document.getElementById('responseArea').style.display = 'none';
+  document.getElementById('loadingBar').classList.add('show');
+
+  setTimeout(() => {
+    document.getElementById('loadingBar').classList.remove('show');
+    populateResponse(sol);
+    const area = document.getElementById('responseArea');
+    area.style.display = 'block';
+    area.classList.add('fade-in');
+    area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 1800);
+}
+
+function populateResponse(sol) {
+  document.getElementById('openScript').textContent = sol.open;
+  const stepList = document.getElementById('stepList');
+  stepList.innerHTML = sol.steps.map(s => `<li>${s}</li>`).join('');
+  document.getElementById('fullScript').textContent = sol.script;
+  document.getElementById('emailTemplate').textContent = sol.email;
+  document.getElementById('escalationContent').innerHTML = sol.escalation.replace(/\n/g, '<br>');
+  const tips = document.getElementById('proTips');
+  tips.innerHTML = sol.tips.map(t => `<li><span class="check">✓</span> ${t}</li>`).join('');
+}
+
+function copyCard(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const btn = el.parentElement.querySelector('.copy-btn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+// ===================== SCRIPTS =====================
+const scriptData = {
+  angry: {
+    title: 'Angry Customer De-escalation',
+    sub: 'Use this script when a customer is visibly upset or raising their voice',
+    blocks: [
+      { who: 'AGENT — OPENING', text: '"Thank you for calling — I can hear that you\'re frustrated, and I want you to know that I\'m here to help and I\'m not going to give up until we sort this out together."' },
+      { who: 'CUSTOMER (typical response)', text: '"I\'ve been waiting for 3 days and nobody has helped me! This is ridiculous!"', type: 'customer' },
+      { who: 'AGENT — ACKNOWLEDGE', text: '"You\'re absolutely right to be frustrated — three days is far too long. I\'m so sorry that happened. Can I start by getting your order number so I can look at this right now, while you\'re on the line?"' },
+      { who: 'AGENT — VALIDATE', text: '"I\'ve looked at your account and I can completely see why you\'re upset. This should not have happened. I\'m going to fix this today — here\'s exactly what I\'m going to do..."' },
+      { who: 'AGENT — CLOSE', text: '"I want to personally make sure this is completely resolved. Is it okay if I follow up with you tomorrow to confirm everything is sorted? And again — I\'m really sorry for the experience you\'ve had."' },
+    ]
+  },
+  refund: {
+    title: 'Refund Request Script',
+    sub: 'Empathetic handling for all refund scenarios — within and outside policy',
+    blocks: [
+      { who: 'AGENT — OPENING', text: '"Of course — I\'d be happy to look into that for you right now. Can I grab your order number?"' },
+      { who: 'AGENT — WITHIN POLICY', text: '"I can absolutely process that for you. I\'ll issue a full refund of [AMOUNT] — you\'ll see it back in your account within 3–5 business days, and I\'ll send you a confirmation email shortly."' },
+      { who: 'AGENT — OUTSIDE POLICY', text: '"I understand — and while our standard return window is 14 days, I can see this item is unopened and you weren\'t clearly informed of our policy. I\'d like to make an exception for you today. I\'ll process [full refund / store credit] — which would you prefer?"' },
+      { who: 'CUSTOMER — PUSHBACK', text: '"I just want my money back, not a credit."', type: 'customer' },
+      { who: 'AGENT — RESOLVE', text: '"Absolutely — a full refund it is. I\'ll process that right now. You\'ll receive a confirmation to [EMAIL]. Is there anything else I can help you with today?"' },
+    ]
+  },
+  technical: {
+    title: 'Technical Troubleshoot Script',
+    sub: 'Walk customers through tech issues step-by-step with patience',
+    blocks: [
+      { who: 'AGENT — OPENING', text: '"No problem — let\'s work through this together. Technical issues can be really frustrating, but we\'ll figure it out. Can you tell me exactly what\'s happening — what do you see on your screen right now?"' },
+      { who: 'AGENT — DIAGNOSE', text: '"And just to help me narrow this down — are you on a phone, tablet, or computer? And what operating system are you using?"' },
+      { who: 'AGENT — FIRST STEPS', text: '"Okay, let\'s start simple. Can you fully close the app — swipe it away — and reopen it? I\'ll wait while you do that..."' },
+      { who: 'CUSTOMER — TYPICAL', text: '"Still getting the same error."', type: 'customer' },
+      { who: 'AGENT — NEXT STEP', text: '"Okay, let\'s try clearing the cache. Go to your phone Settings, then Apps, find [APP NAME], tap Storage, then Clear Cache. Let me know when you\'re done and we\'ll check if that works."' },
+      { who: 'AGENT — ESCALATE', text: '"I appreciate your patience trying all of those steps. This seems to be something our tech team needs to look at more closely. I\'m going to create a priority ticket right now — you\'ll hear back within [TIMEFRAME]. Can I confirm your best email address?"' },
+    ]
+  },
+  cancel: {
+    title: 'Cancellation Save Script',
+    sub: 'Retention-focused script — listen first, then offer the right solution',
+    blocks: [
+      { who: 'AGENT — OPENING', text: '"I\'m sorry to hear you\'re thinking of cancelling — before I process that, would it be okay if I took just two minutes to understand what\'s led to this decision? I want to see if there\'s something we can do."' },
+      { who: 'CUSTOMER — PRICE OBJECTION', text: '"It\'s just too expensive for what I\'m getting."', type: 'customer' },
+      { who: 'AGENT — PRICE SAVE', text: '"That\'s really helpful to know — thank you for being honest with me. I\'d hate for you to leave over cost when there\'s something I can do about it. I can offer you [X]% off for the next [Y] months — would that work better for you?"' },
+      { who: 'CUSTOMER — COMPETITOR', text: '"I found a cheaper option with [COMPETITOR]."', type: 'customer' },
+      { who: 'AGENT — VALUE SAVE', text: '"I completely understand — it\'s smart to compare options. I\'d love to share one thing that sets us apart... [VALUE PROP]. A lot of customers who\'ve switched back tell us that\'s the thing they missed most."' },
+      { who: 'AGENT — GRACEFUL EXIT', text: '"Of course — if you\'ve made your decision, I respect that completely. I\'ll process the cancellation now, but please know your account will be saved and you\'re always welcome back. We\'d love to have you."' },
+    ]
+  },
+  billing: {
+    title: 'Billing Dispute Script',
+    sub: 'Resolve billing errors quickly and rebuild trust',
+    blocks: [
+      { who: 'AGENT — OPENING', text: '"I completely understand — seeing an unexpected charge is alarming. Let me pull up your account right now and find out exactly what\'s happened."' },
+      { who: 'AGENT — VERIFY', text: '"I can see your account here. For security, can you confirm the last 4 digits of the card used for this transaction?"' },
+      { who: 'AGENT — CONFIRMED ERROR', text: '"You\'re absolutely right — I can see the duplicate charge here. I sincerely apologise for this. I\'m processing a full refund of [AMOUNT] right now — you\'ll have a confirmation email within minutes and the money back within 3–5 business days."' },
+      { who: 'AGENT — DISPUTED CHARGE', text: '"I can see the charge — let me check what it\'s for. It looks like this is for [REASON]. Let me explain what happened... [EXPLAIN]. I completely understand if that wasn\'t clear, and I\'d like to [SOLUTION]."' },
+      { who: 'AGENT — CLOSE', text: '"Your refund reference number is [REF]. Is there anything else I can help clarify? I want to make sure you\'re completely happy before we finish."' },
+    ]
+  },
+  shipping: {
+    title: 'Delayed Shipment Script',
+    sub: 'Manage expectations, show urgency, offer solutions proactively',
+    blocks: [
+      { who: 'AGENT — OPENING', text: '"I\'m looking at your tracking right now. I completely understand your concern — I\'d be frustrated too if something I ordered hadn\'t arrived. Let\'s see what\'s going on."' },
+      { who: 'AGENT — TRACKING STALE', text: '"I can see the tracking hasn\'t updated since [DATE] — that\'s not normal, and I\'m escalating this to our shipping team right now as we speak."' },
+      { who: 'AGENT — OFFER OPTIONS', text: '"Here\'s what I can do: I can either have a replacement sent out to you today with express shipping, or I can continue tracing the original parcel and keep you updated every 24 hours. Which would you prefer?"' },
+      { who: 'CUSTOMER — WANTS RESHIP', text: '"Just send me a new one — I need it."', type: 'customer' },
+      { who: 'AGENT — CONFIRM', text: '"Absolutely — I\'m creating a priority replacement order right now. It will be dispatched today and you\'ll receive tracking within [X hours]. I\'m so sorry for this inconvenience and I appreciate your patience."' },
+    ]
+  },
+  escalate: {
+    title: 'Escalation Handoff Script',
+    sub: 'Transfer customers smoothly without making them repeat themselves',
+    blocks: [
+      { who: 'AGENT — SETTING UP', text: '"I want to make sure you get the best possible help for this. I\'m going to bring in [NAME/ROLE] who specialises in exactly this type of situation — they\'ll be able to help you much more effectively than I can."' },
+      { who: 'AGENT — WARM TRANSFER', text: '"Before I transfer you, let me just make sure they have all the context so you don\'t have to repeat yourself. I\'m going to brief them right now."' },
+      { who: 'AGENT — TO COLLEAGUE', text: '"[COLLEAGUE NAME], I have [CUSTOMER NAME] on the line. They\'re experiencing [SUMMARY OF ISSUE]. They\'ve already tried [STEPS TAKEN]. The customer is feeling [FRUSTRATED/UPSET/CONCERNED] — I wanted to make sure you had the full picture."' },
+      { who: 'AGENT — BACK TO CUSTOMER', text: '"[CUSTOMER NAME], I\'m handing you over to [COLLEAGUE] now — they\'re fully briefed and ready to help. Thank you so much for your patience, and I\'m confident they\'ll get this sorted for you."' },
+    ]
+  },
+  closing: {
+    title: 'Positive Closing Script',
+    sub: 'End every interaction leaving the customer feeling genuinely cared for',
+    blocks: [
+      { who: 'AGENT — SUMMARY', text: '"Just to confirm what we\'ve sorted today: [SUMMARY OF RESOLUTION]. You\'ll be receiving [EMAIL/REFUND/UPDATE] within [TIMEFRAME]."' },
+      { who: 'AGENT — SATISFACTION CHECK', text: '"Before I let you go, is there anything else I can help you with today? I want to make sure everything is completely resolved."' },
+      { who: 'AGENT — FEEDBACK INVITE', text: '"You may receive a short survey about today\'s interaction — your feedback genuinely helps us improve and means a lot to our team."' },
+      { who: 'AGENT — WARM CLOSE', text: '"Thank you so much for your patience today, [CUSTOMER NAME]. It was genuinely a pleasure speaking with you. Have a wonderful [rest of your day / weekend] — take care!"' },
+    ]
+  },
+  opening: {
+    title: 'Universal Opening Script',
+    sub: 'Start every contact with warmth, confidence and professionalism',
+    blocks: [
+      { who: 'AGENT — PHONE OPENING', text: '"Good [morning/afternoon], thank you for calling [COMPANY NAME]. My name is [YOUR NAME] — how can I help you today?"' },
+      { who: 'AGENT — CHAT OPENING', text: '"Hi there! 👋 Thanks for reaching out to [COMPANY NAME]. My name is [YOUR NAME] and I\'m happy to help. What can I assist you with today?"' },
+      { who: 'AGENT — AFTER HOLD', text: '"Thank you so much for holding — I really appreciate your patience. I\'ve had a look at your account and I\'m ready to help."' },
+      { who: 'AGENT — VERIFICATION', text: '"Just to make sure I\'m looking at the right account — could I grab your name and the email address linked to your account? It\'ll take just a second."' },
+      { who: 'AGENT — EMPATHY OPENER', text: '"I completely understand — and I\'m going to do my absolute best to get this resolved for you today. Let\'s start from the beginning so I have the full picture."' },
+    ]
+  },
+};
+
+function showScript(key) {
+  const data = scriptData[key];
+  if (!data) return;
+  const viewer = document.getElementById('scriptViewer');
+  document.getElementById('scriptViewerTitle').textContent = data.title;
+  document.getElementById('scriptViewerSub').textContent = data.sub;
+  const content = data.blocks.map(b => `
+    <div class="script-block ${b.type === 'customer' ? 'customer' : 'agent'}">
+      <div class="who">${b.who}</div>
+      ${b.text}
+    </div>
+  `).join('');
+  document.getElementById('scriptViewerContent').innerHTML = content;
+  viewer.classList.add('show');
+  viewer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyScriptViewer() {
+  const content = document.getElementById('scriptViewerContent').innerText;
+  navigator.clipboard.writeText(content).then(() => {
+    const btn = document.querySelector('.script-viewer .copy-btn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy Full Script', 2000);
+  });
+}
+
+// ===================== GUIDES =====================
+const guideData = {
+  empathy: {
+    title: 'The LEAP Empathy Framework',
+    sub: 'A 4-step method for connecting with upset customers and building trust fast',
+    content: `
+      <div class="modal-section">
+        <h4>What is LEAP?</h4>
+        <p>LEAP is a structured empathy framework used by top-performing support teams. It gives you a clear process to follow when emotions are running high.</p>
+      </div>
+      <div class="modal-section">
+        <h4>L — Listen</h4>
+        <p>Let the customer speak without interruption. Your silence signals respect. Resist the urge to problem-solve immediately. The goal is to fully understand the emotional context, not just the facts.</p>
+        <div class="tip-box"><strong>Script:</strong> "I hear you — please, go ahead. I want to understand exactly what happened."</div>
+      </div>
+      <div class="modal-section">
+        <h4>E — Empathise</h4>
+        <p>Reflect the emotion back to them specifically. Avoid generic phrases like "I understand your frustration" — these feel hollow. Be specific to what they actually said.</p>
+        <div class="tip-box"><strong>Script:</strong> "That sounds incredibly stressful, especially if you needed this for [OCCASION/REASON]."</div>
+      </div>
+      <div class="modal-section">
+        <h4>A — Apologise</h4>
+        <p>A genuine apology — even if it wasn't your fault — goes a long way. Apologise on behalf of the company, not the individual agent. Never say "I'm sorry you feel that way."</p>
+        <div class="tip-box"><strong>Script:</strong> "I'm truly sorry this happened. You deserved better from us, and I'm going to make it right."</div>
+      </div>
+      <div class="modal-section">
+        <h4>P — Problem-Solve</h4>
+        <p>Only after the first three steps does problem-solving land effectively. Now the customer is ready to hear solutions. Present options where possible — giving choice restores a sense of control.</p>
+        <div class="tip-box"><strong>Script:</strong> "Here's what I can do for you right now. I can either [OPTION A] or [OPTION B] — which would work better for you?"</div>
+      </div>
+    `
+  },
+  'active-listening': {
+    title: 'Active Listening Techniques',
+    sub: 'How to truly hear your customer and identify the real problem quickly',
+    content: `
+      <div class="modal-section">
+        <h4>Why It Matters</h4>
+        <p>Studies show customers who feel truly heard are 3x more likely to be satisfied with the resolution — even if the outcome isn't perfect. Active listening is a superpower.</p>
+      </div>
+      <div class="modal-section">
+        <h4>Key Techniques</h4>
+        <ul>
+          <li>Don't interrupt — even when you think you know the answer</li>
+          <li>Use verbal nods: "I see", "right", "okay, got it" — these signal you're engaged</li>
+          <li>Paraphrase back: "So what I'm hearing is..." — this confirms understanding</li>
+          <li>Ask one clarifying question at a time — not a barrage</li>
+          <li>Silence is okay — don't fill every gap with noise</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <h4>The Magic Paraphrase</h4>
+        <p>After they've explained the issue, always summarise back before jumping to solutions. This single step reduces escalations by over 40%.</p>
+        <div class="tip-box"><strong>Script:</strong> "So just to make sure I've got this right — you [SUMMARY]. Is that correct?" Then wait for their confirmation.</div>
+      </div>
+    `
+  },
+  'first-contact': {
+    title: 'First Contact Resolution (FCR)',
+    sub: 'Solve it once. The goal every single time.',
+    content: `
+      <div class="modal-section">
+        <h4>What is FCR?</h4>
+        <p>First Contact Resolution means solving the customer's issue completely in one interaction — no callbacks, no follow-ups, no bouncing between departments.</p>
+      </div>
+      <div class="modal-section">
+        <h4>How to Hit FCR Every Time</h4>
+        <ul>
+          <li>Diagnose fully before proposing solutions — don't guess</li>
+          <li>Check related issues while you have them: "While I'm here, let me also check..."</li>
+          <li>Don't promise callbacks unless absolutely necessary — resolve it now</li>
+          <li>Before closing, ask: "Is there anything else that might come up around this?"</li>
+          <li>If you genuinely can't solve it, set a precise callback time — not "soon"</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <h4>The FCR Closing Check</h4>
+        <div class="tip-box"><strong>Always ask before closing:</strong> "Is everything completely resolved from your end, or is there anything else I can take care of for you while we're talking?"</div>
+      </div>
+    `
+  },
+  documentation: {
+    title: 'Ticket Documentation Guide',
+    sub: 'Write notes that help your whole team — not just yourself',
+    content: `
+      <div class="modal-section">
+        <h4>The Golden Rule</h4>
+        <p>Write your ticket notes as if the next person reading them has zero context. Because they might not.</p>
+      </div>
+      <div class="modal-section">
+        <h4>What Every Ticket Must Include</h4>
+        <ul>
+          <li>Customer's reported issue — in their words, then in your words</li>
+          <li>Steps you took to investigate</li>
+          <li>Every step taken to resolve (including what DIDN'T work)</li>
+          <li>Outcome and what was promised to the customer</li>
+          <li>Any follow-up actions required and by when</li>
+          <li>Emotional state of customer (escalated / satisfied / frustrated)</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <h4>Template</h4>
+        <div class="tip-box">
+          <strong>Issue:</strong> [What the customer said happened]<br>
+          <strong>Root cause:</strong> [What you found]<br>
+          <strong>Action taken:</strong> [What you did]<br>
+          <strong>Outcome:</strong> [What was resolved / promised]<br>
+          <strong>Follow-up needed:</strong> [Yes/No — if yes, when and what]
+        </div>
+      </div>
+    `
+  },
+  angry: {
+    title: 'Handling Angry Customers',
+    sub: 'Step-by-step de-escalation that works in even the toughest situations',
+    content: `
+      <div class="modal-section">
+        <h4>The #1 Rule</h4>
+        <p>Never match the customer's emotional energy. Your calm is contagious — and so is your panic. Lower your voice slightly. Slow down. This physiologically signals safety.</p>
+      </div>
+      <div class="modal-section">
+        <h4>What To Say (And Not To Say)</h4>
+        <ul>
+          <li>✅ "You're absolutely right to feel that way"</li>
+          <li>✅ "I would be frustrated too in that situation"</li>
+          <li>✅ "Thank you for telling me — that helps me understand"</li>
+          <li>❌ "I'm sorry you feel that way" (invalidating)</li>
+          <li>❌ "That's our policy" (dismissive)</li>
+          <li>❌ "There's nothing I can do" (ever)</li>
+          <li>❌ "Calm down" (escalates every time)</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <h4>When They're Shouting</h4>
+        <p>If a customer is shouting or being abusive, calmly set a boundary — once. You do not have to accept abuse.</p>
+        <div class="tip-box"><strong>Script:</strong> "I genuinely want to help you, and I will. I do need to ask that we keep the conversation respectful so I can focus fully on finding the best solution for you."</div>
+      </div>
+      <div class="modal-section">
+        <h4>After De-escalation</h4>
+        <p>Once the customer has calmed, don't rush. A pause, a breath, then a warm summary of what you're going to do. Speed of action at this point is critical to rebuilding trust.</p>
+      </div>
+    `
+  },
+  fraud: {
+    title: 'Suspected Fraud Calls',
+    sub: 'Protect accounts professionally without alienating genuine customers',
+    content: `
+      <div class="modal-section">
+        <h4>The Balance</h4>
+        <p>You must protect the account — but most people calling about fraud are genuine victims, not perpetrators. Treat everyone with respect while following protocol.</p>
+      </div>
+      <div class="modal-section">
+        <h4>Red Flags to Watch For</h4>
+        <ul>
+          <li>Unusual urgency: "I need this done RIGHT NOW"</li>
+          <li>Requests to bypass security verification</li>
+          <li>Caller has unusual gaps in account knowledge</li>
+          <li>Request to change email, phone AND password in same call</li>
+          <li>Unusual transaction amounts or locations</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <h4>What To Do</h4>
+        <p>If you suspect fraud, do NOT tell the caller your suspicions. Follow this path: complete full verification, if fails → apologise and say you'll need to send a secure email link → escalate to security team immediately.</p>
+        <div class="tip-box"><strong>Script:</strong> "For the security of your account, I'll need to send a verification link to the email on file. You should receive it within 2 minutes."</div>
+      </div>
+    `
+  },
+  media: {
+    title: 'Social Media Escalations',
+    sub: 'When a customer goes public — here is exactly what to do',
+    content: `
+      <div class="modal-section">
+        <h4>The First Response Rule</h4>
+        <p>Respond to public posts within 60 minutes. A fast, empathetic public response shows everyone — not just that customer — that you care. Delay is the enemy.</p>
+      </div>
+      <div class="modal-section">
+        <h4>The Public Response Formula</h4>
+        <ul>
+          <li>Acknowledge their experience publicly (never dismiss or argue)</li>
+          <li>Apologise briefly and genuinely</li>
+          <li>Move to private: "Please DM us / email support@... and we'll sort this immediately"</li>
+          <li>Never share account details publicly</li>
+          <li>Never get defensive or argue publicly — even if they're wrong</li>
+        </ul>
+        <div class="tip-box"><strong>Public reply script:</strong> "We're so sorry to hear about your experience, [NAME]. This isn't the standard we hold ourselves to. Please DM us directly and we'll make this right immediately."</div>
+      </div>
+      <div class="modal-section">
+        <h4>Escalate Immediately If</h4>
+        <ul>
+          <li>Post has gone viral (100+ shares/likes)</li>
+          <li>Journalist or influencer involved</li>
+          <li>Post contains false or defamatory claims</li>
+        </ul>
+      </div>
+    `
+  },
+  threat: {
+    title: 'Legal Threats & Chargebacks',
+    sub: 'What to say, what NOT to say, and exactly when to escalate',
+    content: `
+      <div class="modal-section">
+        <h4>Stay Calm — Most Threats Are Not Serious</h4>
+        <p>The vast majority of "legal threat" calls are frustrated customers expressing emotion. Treat them with empathy, not defensiveness. Your tone will either de-escalate or inflame.</p>
+      </div>
+      <div class="modal-section">
+        <h4>What You Should NEVER Say</h4>
+        <ul>
+          <li>❌ "You'll need to speak to our legal team"</li>
+          <li>❌ "We're not liable for that"</li>
+          <li>❌ "Go ahead and dispute it — we'll win"</li>
+          <li>❌ Any admission of wrongdoing or liability</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <h4>What To Say</h4>
+        <div class="tip-box"><strong>Script:</strong> "I completely understand your frustration. I want to do everything I can to resolve this for you right now, without it needing to go any further. Can I tell you what I can offer?"</div>
+      </div>
+      <div class="modal-section">
+        <h4>Escalate to Manager Immediately If</h4>
+        <ul>
+          <li>Customer mentions a lawyer or law firm by name</li>
+          <li>Customer files or threatens a chargeback</li>
+          <li>Customer references consumer protection agencies</li>
+          <li>Amount in dispute exceeds $500</li>
+        </ul>
+      </div>
+    `
+  },
+  'refund-policy': {
+    title: 'Refund & Return Policy Guide',
+    sub: 'Full policy breakdown with how to handle every exception scenario',
+    content: `
+      <div class="modal-section">
+        <h4>Standard Policy</h4>
+        <ul>
+          <li>14-day return window from date of delivery</li>
+          <li>Item must be in original condition / unopened for full refund</li>
+          <li>Opened items: store credit only (unless faulty)</li>
+          <li>Digital products: non-refundable unless technical fault</li>
+          <li>Refund to original payment method: 3–5 business days</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <h4>Approved Exceptions</h4>
+        <ul>
+          <li>Genuinely uninformed of policy at point of purchase → full refund</li>
+          <li>Gift purchases → extend window to 30 days</li>
+          <li>Faulty or damaged item → full refund + shipping, no questions</li>
+          <li>Bereaved or medical hardship → manager discretion, usually approved</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <h4>When To Escalate</h4>
+        <p>Escalate to returns team for any refund over $300, any disputed damage claim, or any situation where the right call isn't clear.</p>
+        <div class="tip-box"><strong>Remember:</strong> A refused refund costs far more in goodwill than the refund itself. When in doubt, approve it.</div>
+      </div>
+    `
+  },
+  'data-privacy': {
+    title: 'Data Privacy & GDPR Requests',
+    sub: 'Handle deletion, access and data requests professionally and legally',
+    content: `
+      <div class="modal-section">
+        <h4>Types of Requests You'll Receive</h4>
+        <ul>
+          <li>Right of Access — customer wants to see their data</li>
+          <li>Right to Erasure ("Right to be Forgotten") — delete all data</li>
+          <li>Data Portability — export data in readable format</li>
+          <li>Rectification — correct inaccurate data</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <h4>Your Response Process</h4>
+        <ul>
+          <li>Verify identity fully before taking any action</li>
+          <li>Log the request with date/time — legal requirement</li>
+          <li>Escalate to Data Protection Officer (DPO) immediately</li>
+          <li>Legal deadline: respond within 30 days</li>
+          <li>Never action data deletion yourself — this must go through DPO</li>
+        </ul>
+      </div>
+      <div class="modal-section">
+        <h4>What To Say</h4>
+        <div class="tip-box"><strong>Script:</strong> "Thank you for your request. I've logged this with our Data Protection team, who will be in touch within 5 business days to process this for you. You'll receive a confirmation email at [EMAIL] shortly."</div>
+      </div>
+    `
+  },
+};
+
+function openGuide(key) {
+  const data = guideData[key];
+  if (!data) return;
+  document.getElementById('guideTitle').textContent = data.title;
+  document.getElementById('guideSub').textContent = data.sub;
+  document.getElementById('guideContent').innerHTML = data.content;
+  document.getElementById('guideModal').classList.add('show');
+}
+
+function closeGuide() {
+  document.getElementById('guideModal').classList.remove('show');
+}
+
+document.getElementById('guideModal').addEventListener('click', function(e) {
+  if (e.target === this) closeGuide();
+});
+</script>
+</body>
+</html>
